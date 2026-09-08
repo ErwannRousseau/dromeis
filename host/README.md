@@ -6,13 +6,14 @@
 
 Use `admin` as the username for the initial user
 
-### Adjust the machine’s preferences:
+### Adjust the machine’s preferences
 
 - General → Sharing → enable **Screen Sharing**
 - General → Sharing → enable **Remote Login**
 - General → Sharing → edit **Hostname** (`gh-shr-XX`)
 - General → About → edit **Name** (`gh-shr-XX`)
-- Displays → Advanced… → Energy → enable **Prevent automatic sleeping when display is off**
+- Displays → Advanced… → Energy → enable **Prevent automatic sleeping when
+  display is off**
 - Energy Saver → enable **Start up automatically after a power failure**
 
 <table>
@@ -30,7 +31,8 @@ Use `admin` as the username for the initial user
 
 ### Install SSH Key
 
-From your local machine, copy your public SSH key (eg. `~/.ssh/id_rsa.pub`) to the machine
+From your local machine, copy your public SSH key (eg. `~/.ssh/id_rsa.pub`) to
+the machine
 
 ```
 # You’ll be prompted for admin’s password just this one time
@@ -39,21 +41,23 @@ $ ssh-copy-id -i ~/.ssh/id_rsa.pub admin@<HOST_IP>
 
 ### Copy Files
 
-Still from your local machine, copy a few files from this repository. The `.env` contains configurations for the runner (see `.env.example` for a template).
+Still from your local machine, copy a few files from this repository. The `.env`
+contains configurations for the runner (see `.env.example` for a template).
 
 ```
-$ scp launch.sh admin@<HOST_IP>:vm
-$ scp com.mirego.ekiden.plist admin@<HOST_IP>:vm
-$ scp .env admin@<HOST_IP>:vm
+scp launch.sh admin@<HOST_IP>:vm
+scp com.mirego.ekiden.plist admin@<HOST_IP>:vm
+scp .env admin@<HOST_IP>:vm
 ```
 
 ### Install Tools
 
-On the remote machine, install [Homebrew](https://brew.sh), `wget`, `sshpass` and [tart](https://github.com/cirruslabs/tart/)
+On the remote machine, install [Homebrew](https://brew.sh), `wget`, `sshpass`
+and [tart](https://github.com/cirruslabs/tart/)
 
 ```
-$ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-$ brew install wget cirruslabs/cli/tart cirruslabs/cli/sshpass
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+brew install wget cirruslabs/cli/tart cirruslabs/cli/sshpass
 ```
 
 ### Start the Runner
@@ -61,9 +65,9 @@ $ brew install wget cirruslabs/cli/tart cirruslabs/cli/sshpass
 Install the service and launch it.
 
 ```
-$ sudo chown root:wheel launch.sh
-$ sudo cp com.mirego.ekiden.plist /Library/LaunchDaemons
-$ sudo launchctl load -w /Library/LaunchDaemons/com.mirego.ekiden.plist
+sudo chown root:wheel launch.sh
+sudo cp com.mirego.ekiden.plist /Library/LaunchDaemons
+sudo launchctl load -w /Library/LaunchDaemons/com.mirego.ekiden.plist
 ```
 
 You can now logout from the server.
