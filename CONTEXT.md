@@ -18,6 +18,21 @@ runner job and removed after that job ends. _Avoid_: persistent VM, shared VM
 **Dromeis runner**: The ephemeral self-hosted GitHub Actions runner configured
 inside a job VM. _Avoid_: host runner, permanent runner
 
+**Client organization**: An independent GitHub organization whose repositories
+use Dromeis. _Avoid_: tenant, shared organization
+
+**Runner registration**: The GitHub association that allows one Dromeis runner
+to receive jobs from one repository or organization. _Avoid_: multi-org runner
+
+**Organization runner service**: A Host-local service dedicated to one Client
+organization and its runner registrations. _Avoid_: shared runner process
+
+**Shared Host**: A physical Apple silicon Mac that serves multiple client
+organizations through isolated runner instances. _Avoid_: shared runner
+
+**Concurrency capacity**: The number of job VMs a Host can run at the same time
+within its hardware and isolation limits. _Avoid_: runner count
+
 ## Workflow boundary
 
 **Caller workflow**: The minimal workflow stored in a consuming React Native

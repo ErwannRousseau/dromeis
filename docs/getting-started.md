@@ -13,14 +13,6 @@ The physical Mac is the **host**. It creates one disposable **job VM** from the
 versioned **runner image** for each GitHub Actions job. The GitHub runner itself
 runs inside that job VM, not on the host.
 
-Before deploying, run the repository checks from a Dromeis development checkout
-(the fresh host does not need Node.js for these checks):
-
-```sh
-make lint
-make smoke
-```
-
 ## 0. Choose the image source
 
 Choose one path before configuring the host:

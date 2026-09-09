@@ -1,7 +1,4 @@
-<div align="center">
-  <img alt="Dromeis" src="https://user-images.githubusercontent.com/11348/221278252-9183ed78-ae49-4d7b-be99-f8545de1921f.png" width="400" />
-  <p><br />GitHub Actions self-hosted <code>arm64</code> macOS runners</p>
-</div>
+# Dromeis
 
 ## Introduction
 
