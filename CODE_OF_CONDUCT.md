@@ -17,7 +17,7 @@ conflicts in the community when they arise.
 
 ## Our Values
 
-These are the values Ekiden developers should aspire to:
+These are the values Dromeis developers should aspire to:
 
 - Be friendly and welcoming
 - Be patient

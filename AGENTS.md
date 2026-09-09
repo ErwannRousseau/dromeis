@@ -1,4 +1,4 @@
-# Ekiden runner infrastructure
+# Dromeis runner infrastructure
 
 This repository provisions and operates ephemeral arm64 macOS GitHub Actions
 runners with Tart, Packer, Gitea, and Grafana.

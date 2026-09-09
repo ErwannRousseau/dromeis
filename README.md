@@ -1,5 +1,5 @@
 <div align="center">
-  <img alt="Ekiden" src="https://user-images.githubusercontent.com/11348/221278252-9183ed78-ae49-4d7b-be99-f8545de1921f.png" width="400" />
+  <img alt="Dromeis" src="https://user-images.githubusercontent.com/11348/221278252-9183ed78-ae49-4d7b-be99-f8545de1921f.png" width="400" />
   <p><br />GitHub Actions self-hosted <code>arm64</code> macOS runners</p>
 </div>
 
@@ -85,7 +85,7 @@ flowchart LR
 
 ## License
 
-Ekiden is © 2022 [Mirego](https://www.mirego.com) and may be freely distributed
+Dromeis is © 2022 [Mirego](https://www.mirego.com) and may be freely distributed
 under the [New BSD license](http://opensource.org/licenses/BSD-3-Clause). See
 the [`LICENSE.md`](./LICENSE.md) file.
 
