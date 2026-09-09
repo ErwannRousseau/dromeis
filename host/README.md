@@ -1,5 +1,8 @@
 # Host Configuration
 
+For a completely reset Mac, follow the
+[first-installation guide](../docs/getting-started.md) first.
+
 ## UI
 
 ### Complete the macOS setup
@@ -75,7 +78,9 @@ You can now logout from the server.
 
 ### Image configuration
 
-Set `REGISTRY_URL`, `REGISTRY_IMAGE_NAME`, and an immutable
-`REGISTRY_IMAGE_DIGEST` (`sha256:` followed by 64 hexadecimal characters) in
-`.env` for a remote image. `latest` is intentionally unsupported. With no
-`REGISTRY_URL`, the local Tart image named by `REGISTRY_IMAGE_NAME` is used.
+Set `REGISTRY_URL` to the registry host accepted by Tart (for example,
+`registry.example.com`, without `https://`), then set `REGISTRY_IMAGE_NAME` and
+an immutable `REGISTRY_IMAGE_DIGEST` (`sha256:` followed by 64 hexadecimal
+characters) in `.env` for a remote image. `latest` is intentionally unsupported.
+With no `REGISTRY_URL`, the local Tart image named by `REGISTRY_IMAGE_NAME` is
+used.

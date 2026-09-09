@@ -18,6 +18,8 @@ these images, [Gitea](https://gitea.io/) to store the images and
 
 ## Configuration
 
+- For a new machine, start with the
+  [first-installation guide](docs/getting-started.md).
 - To configure a new **host** machine, follow the
   [host configuration guide](host/README.md)
 - To create a new **VM**, follow the

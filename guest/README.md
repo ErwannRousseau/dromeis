@@ -81,10 +81,11 @@ done
 ## Push the image on the container registry
 
 The new image can be pushed to a registry to facilitate the distribution. Follow
-the [registry configuration guide](registry/README.md) to get one running.
+the [registry configuration guide](../registry/README.md) to get one running.
 Replace `IMAGE_TAG` with a unique build identifier (for example, a release or
-commit label). The tag is only a mutable name for publishing; it is not the
-image reference used by the host.
+commit label). Set `REGISTRY_URL` to the registry host accepted by Tart (for
+example, `registry.example.com`, without `https://`). The tag is only a mutable
+name for publishing; it is not the image reference used by the host.
 
 ```
 tart login REGISTRY_URL
