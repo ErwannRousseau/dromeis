@@ -1,23 +1,25 @@
 #!/bin/bash
+set -Eeuo pipefail
 
 GITHUB_API_TOKEN=
 GITHUB_REGISTRATION_ENDPOINT=
 
-VM_USERNAME="admin"
-VM_PASSWORD="admin"
+VM_USERNAME="runner"
+VM_PASSWORD="runner"
 
-RUNNER_LABELS="self-hosted,M1"
+RUNNER_LABELS="self-hosted,arm64,dromeis"
 RUNNER_URL=
 RUNNER_NAME="Runner"
 
 REGISTRY_URL=
 REGISTRY_IMAGE_NAME="runner"
+REGISTRY_IMAGE_DIGEST=
 
 LOGFILE="runner.log"
 SCHEDULE_SHUTDOWN=false
 
 function log_output {
-	if [ -z "$2" ] || [ "$2" = "true" ]; then
+	if [ -z "${2:-}" ] || [ "${2:-}" = "true" ]; then
 		echo "$(date "+%Y/%m/%d %H:%M:%S") $1"
 		echo "$(date "+%Y/%m/%d %H:%M:%S") [${RUN_ID:-PREPARING}] $1" >>$LOGFILE
 	fi
@@ -36,14 +38,27 @@ function reload_env {
 	fi
 }
 
+function cleanup_vm {
+	if [ -n "${INSTANCE_NAME:-}" ]; then
+		log_output "[HOST] ✋ Stop the VM"
+		tart stop "$INSTANCE_NAME" >/dev/null 2>&1 || true
+		log_output "[HOST] 🧹 Cleanup the VM"
+		tart delete "$INSTANCE_NAME" >/dev/null 2>&1 || true
+		INSTANCE_NAME=""
+	fi
+}
+
 function cleanup {
+	local status=$?
+	trap - EXIT SIGINT SIGTERM
+	cleanup_vm
 	log_output "[HOST] 🚦 Stopping runner script"
-	exit 0
+	exit "$status"
 }
 
 function ssh_command() {
 	local command=$1
-	local show_output=$2
+	local show_output=${2:-}
 
 	if [ -z "${show_output}" ] || [ "${show_output}" = "true" ]; then
 		SSHPASS=$VM_PASSWORD sshpass -e ssh -q -o StrictHostKeyChecking=no "$VM_USERNAME@$IP_ADDRESS" "$command" 2>&1 | sed -nru 's/^(.+)$/[GUEST] 📀 \1/p' | stream_output
@@ -55,10 +70,10 @@ function ssh_command() {
 function boot_vm {
 	BASE_IMAGE=$1
 	INSTANCE_NAME=$2
-	ENABLE_LOGGING=$3
+	ENABLE_LOGGING=${3:-true}
 
 	TART_NO_AUTO_PRUNE="" tart clone "$BASE_IMAGE" "$INSTANCE_NAME"
-	trap 'log_output "[HOST] 🪓 Killing the VM"; tart delete $INSTANCE_NAME; cleanup' SIGINT SIGTERM
+	trap cleanup EXIT SIGINT SIGTERM
 
 	tart set "$INSTANCE_NAME" --memory "${VM_RAM:-8192}"
 	tart set "$INSTANCE_NAME" --cpu "${VM_CPU:-4}"
@@ -66,14 +81,16 @@ function boot_vm {
 	tart run --no-graphics "$INSTANCE_NAME" >/dev/null 2>&1 &
 
 	log_output "[HOST] 💤 Waiting for VM to boot" "$ENABLE_LOGGING"
-	IP_ADDRESS=$(tart ip "$INSTANCE_NAME")
+	IP_ADDRESS=""
 	until [[ "$IP_ADDRESS" =~ ^([0-9]+\.){3}[0-9]+$ ]]; do
-		IP_ADDRESS=$(tart ip "$INSTANCE_NAME")
-		sleep 1
+		IP_ADDRESS=$(tart ip "$INSTANCE_NAME" 2>/dev/null || true)
+		[[ "$IP_ADDRESS" =~ ^([0-9]+\.){3}[0-9]+$ ]] || sleep 1
 	done
 
 	# Clean old SSH host key reference for the VM to avoid conflicts
-	ssh-keygen -R "$IP_ADDRESS" >/dev/null
+	if [ -f "$HOME/.ssh/known_hosts" ]; then
+		ssh-keygen -R "$IP_ADDRESS" >/dev/null
+	fi
 
 	log_output "[HOST] 💤 Waiting for SSH to be available on VM" "$ENABLE_LOGGING"
 	until [ "$(SSHPASS=$VM_PASSWORD sshpass -e ssh -q -o ConnectTimeout=1 -o StrictHostKeyChecking=no "$VM_USERNAME@$IP_ADDRESS" pwd)" ]; do
@@ -84,7 +101,7 @@ function boot_vm {
 function resize_cached_image {
 	# The images from cirruslabs are too small for some builds
 	# This step allows to resize the disk by truncating the disk file and booting the VM to resize the partition
-	if [ -n "${TRUNCATE_SIZE}" ]; then
+	if [ -n "${TRUNCATE_SIZE:-}" ]; then
 		log_output "[HOST] 📊 Resizing the disk at path '$REGISTRY_DISK_PATH' to $TRUNCATE_SIZE"
 		truncate -s "$TRUNCATE_SIZE" "$REGISTRY_DISK_PATH/disk.img"
 
@@ -111,10 +128,10 @@ function pull_image {
 	rm -rf ~/.tart
 
 	log_output "[HOST] ⬇️ Downloading from remote registry"
-	if [ -z "$REGISTRY_USERNAME" ]; then
+	if [ -z "${REGISTRY_USERNAME:-}" ]; then
 		tart pull "$REGISTRY_PATH" --concurrency 1
 	else
-		TART_REGISTRY_USERNAME=$REGISTRY_USERNAME TART_REGISTRY_PASSWORD=$REGISTRY_PASSWORD tart pull "$REGISTRY_PATH" --concurrency 1
+		TART_REGISTRY_USERNAME="$REGISTRY_USERNAME" TART_REGISTRY_PASSWORD="${REGISTRY_PASSWORD:-}" tart pull "$REGISTRY_PATH" --concurrency 1
 	fi
 
 	resize_cached_image
@@ -136,14 +153,8 @@ function run_loop {
 	log_output "[HOST] 🏃 Starting runner on VM"
 	ssh_command "source ~/.zprofile && ./actions-runner/run.sh"
 
-	log_output "[HOST] ✋ Stop the VM"
-	tart stop "$INSTANCE_NAME"
-
-	log_output "[HOST] 🧹 Cleanup the VM"
-	tart delete "$INSTANCE_NAME"
-
+	cleanup_vm
 	RUN_ID=""
-	trap cleanup SIGINT SIGTERM
 }
 
 # Configure Homebrew
@@ -163,14 +174,18 @@ while :; do
 
 	# Select image
 	if [ -n "${REGISTRY_URL}" ]; then
-		REGISTRY_PATH="$REGISTRY_URL/$REGISTRY_IMAGE_NAME"
+		if [[ "${REGISTRY_IMAGE_NAME}" == *latest* ]] || [[ ! "${REGISTRY_IMAGE_DIGEST:-}" =~ ^sha256:[0-9a-fA-F]{64}$ ]]; then
+			log_output "[HOST] ❌ Remote images require a non-latest name and sha256 digest"
+			exit 1
+		fi
+		REGISTRY_PATH="$REGISTRY_URL/$REGISTRY_IMAGE_NAME@$REGISTRY_IMAGE_DIGEST"
 		REGISTRY_DISK_PATH="$HOME/.tart/cache/OCIs/${REGISTRY_PATH//://}"
 	else
 		REGISTRY_PATH="$REGISTRY_IMAGE_NAME"
 	fi
 
 	# Pull image if not cached
-	if ! tart list | grep $REGISTRY_PATH; then
+	if ! tart list | grep -F -- "$REGISTRY_PATH"; then
 		log_output "[HOST] 🔎 Target image not found"
 		if [ -n "${REGISTRY_URL}" ]; then
 			pull_image

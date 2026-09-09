@@ -25,6 +25,10 @@ lint: ## Lint files
 	shfmt -d $(SHFMT_FILES_PATTERN)
 	shellcheck $(SHFMT_FILES_PATTERN)
 
+.PHONY: smoke
+smoke: ## Run workflow and image smoke checks
+	bash tests/dromeis_smoke.sh
+
 .PHONY: format
 format: ## Format source files
 	npx prettier --write $(PRETTIER_FILES_PATTERN)

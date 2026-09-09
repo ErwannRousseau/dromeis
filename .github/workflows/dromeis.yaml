@@ -1,0 +1,182 @@
+name: Dromeis
+
+on:
+  workflow_call:
+    inputs:
+      command:
+        description: Project-owned command to run from the checkout root
+        required: true
+        type: string
+      xcode-version:
+        required: false
+        type: string
+      node-version:
+        required: false
+        type: string
+      java-version:
+        required: false
+        type: string
+      ruby-version:
+        required: false
+        type: string
+    secrets:
+      APP_STORE_CONNECT_KEY_ID:
+        required: false
+      APP_STORE_CONNECT_ISSUER_ID:
+        required: false
+      APP_STORE_CONNECT_PRIVATE_KEY:
+        required: false
+      MATCH_PASSWORD:
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  dromeis:
+    runs-on: [self-hosted, arm64, dromeis]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Select installed toolchains
+        shell: bash --noprofile --norc -Eeuo pipefail {0}
+        env:
+          INPUT_XCODE_VERSION: ${{ inputs['xcode-version'] }}
+          INPUT_NODE_VERSION: ${{ inputs['node-version'] }}
+          INPUT_JAVA_VERSION: ${{ inputs['java-version'] }}
+          INPUT_RUBY_VERSION: ${{ inputs['ruby-version'] }}
+        working-directory: ${{ github.workspace }}
+        run: |
+          test -r /etc/dromeis/toolchains.env || {
+            echo 'Missing /etc/dromeis/toolchains.env on the runner image' >&2
+            exit 1
+          }
+          source /etc/dromeis/toolchains.env
+
+          exact_version() {
+            [[ "$1" =~ ^[0-9]+(\.[0-9]+){0,3}$ ]]
+          }
+
+          choose_version() {
+            local name=$1 requested=$2 available=$3 default=$4
+            if [[ -n "$requested" ]]; then
+              printf -v "$name" '%s' "$requested"
+            else
+              printf -v "$name" '%s' "$default"
+            fi
+            local selected=${!name}
+            exact_version "$selected" || {
+              echo "$name must be an exact numeric version, got '$selected'" >&2
+              exit 1
+            }
+            local version
+            for version in ${available//,/ }; do
+              [[ "$version" == "$selected" ]] && return
+            done
+            echo "$name '$selected' is unavailable; available versions: ${available:-none}" >&2
+            exit 1
+          }
+
+          file_version() {
+            local file=$1 key=$2 value
+            [[ -f "$file" ]] || return 1
+            value=$(awk -v key="$key" '$1 == key { print $2; exit }' "$file")
+            [[ -n "$value" ]] || return 1
+            printf '%s' "$value"
+          }
+
+          node_file=''
+          if [[ -f .nvmrc ]]; then
+            node_file=$(tr -d '[:space:]' < .nvmrc)
+            node_file=${node_file#v}
+          fi
+          java_file=$(file_version .tool-versions java || true)
+          [[ -n "$java_file" ]] || java_file=$(tr -d '[:space:]' < .java-version 2>/dev/null || true)
+          ruby_file=$(file_version .tool-versions ruby || true)
+          [[ -n "$ruby_file" ]] || ruby_file=$(tr -d '[:space:]' < .ruby-version 2>/dev/null || true)
+
+          java_requested="${java_file:-$INPUT_JAVA_VERSION}"
+          java_asdf_requested=''
+          if [[ "$java_requested" =~ ^temurin-[0-9]+\.[0-9]+\.[0-9]+\+[0-9]+$ ]]; then
+            java_asdf_requested=$java_requested
+            java_requested=${java_requested#temurin-}
+            java_requested=${java_requested%%.*}
+          fi
+
+          choose_version NODE_VERSION "${node_file:-$INPUT_NODE_VERSION}" "$DROMEIS_NODE_VERSIONS" "$DROMEIS_NODE_DEFAULT"
+          choose_version JAVA_VERSION "$java_requested" "$DROMEIS_JAVA_VERSIONS" "$DROMEIS_JAVA_DEFAULT"
+          choose_version RUBY_VERSION "${ruby_file:-$INPUT_RUBY_VERSION}" "$DROMEIS_RUBY_VERSIONS" "$DROMEIS_RUBY_DEFAULT"
+          choose_version XCODE_VERSION "$INPUT_XCODE_VERSION" "$DROMEIS_XCODE_VERSIONS" "$DROMEIS_XCODE_DEFAULT"
+
+          xcode_path="/Applications/Xcode_${XCODE_VERSION}.app"
+          [[ -d "$xcode_path/Contents/Developer" ]] || {
+            echo "XCODE_VERSION '$XCODE_VERSION' is not installed at $xcode_path; available versions: ${DROMEIS_XCODE_VERSIONS:-none}" >&2
+            exit 1
+          }
+          export DEVELOPER_DIR="$xcode_path/Contents/Developer"
+
+          eval "$(/opt/homebrew/bin/brew shellenv)"
+          export ASDF_DATA_DIR="${ASDF_DATA_DIR:-$HOME/.asdf}"
+          export PATH="$ASDF_DATA_DIR/shims:$PATH"
+          if ! node_path=$(asdf where nodejs "$NODE_VERSION" 2>/dev/null); then
+            echo "NODE_VERSION '$NODE_VERSION' is not installed; available versions: ${DROMEIS_NODE_VERSIONS:-none}" >&2
+            exit 1
+          fi
+          if ! ruby_path=$(asdf where ruby "$RUBY_VERSION" 2>/dev/null); then
+            echo "RUBY_VERSION '$RUBY_VERSION' is not installed; available versions: ${DROMEIS_RUBY_VERSIONS:-none}" >&2
+            exit 1
+          fi
+          java_asdf_versions=${DROMEIS_JAVA_ASDF_VERSIONS//,/ }
+          if [[ -n "$java_asdf_requested" ]]; then
+            java_asdf_version=$(for version in $java_asdf_versions; do
+              [[ "$version" == "$java_asdf_requested" ]] && printf '%s' "$version" && break
+            done)
+          else
+            java_asdf_version=$(for version in $java_asdf_versions; do
+              [[ "$version" == temurin-${JAVA_VERSION}.* ]] && printf '%s' "$version" && break
+            done)
+          fi
+          [[ -n "$java_asdf_version" ]] || {
+            echo "JAVA_VERSION '$JAVA_VERSION' has no installed JDK mapping; available versions: ${DROMEIS_JAVA_VERSIONS:-none}" >&2
+            exit 1
+          }
+          if ! java_path=$(asdf where java "$java_asdf_version" 2>/dev/null); then
+            echo "JAVA_VERSION '$JAVA_VERSION' is not installed; available versions: ${DROMEIS_JAVA_VERSIONS:-none}" >&2
+            exit 1
+          fi
+          export PATH="$node_path/bin:$ruby_path/bin:$java_path/bin:$PATH"
+          export ASDF_NODEJS_VERSION="$NODE_VERSION"
+          export ASDF_RUBY_VERSION="$RUBY_VERSION"
+          export JAVA_HOME="$java_path"
+          export XCODE_VERSION NODE_VERSION JAVA_VERSION RUBY_VERSION
+          {
+            echo "PATH=$PATH"
+            echo "ASDF_NODEJS_VERSION=$ASDF_NODEJS_VERSION"
+            echo "ASDF_RUBY_VERSION=$ASDF_RUBY_VERSION"
+            echo "JAVA_HOME=$JAVA_HOME"
+            [[ -n "${DEVELOPER_DIR:-}" ]] && echo "DEVELOPER_DIR=$DEVELOPER_DIR"
+            echo "XCODE_VERSION=$XCODE_VERSION"
+            echo "NODE_VERSION=$NODE_VERSION"
+            echo "JAVA_VERSION=$JAVA_VERSION"
+            echo "RUBY_VERSION=$RUBY_VERSION"
+          } >> "$GITHUB_ENV"
+
+      - name: Run project command
+        shell: bash --noprofile --norc -Eeuo pipefail {0}
+        env:
+          PROJECT_COMMAND: ${{ inputs.command }}
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID:
+            ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_PRIVATE_KEY:
+            ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+        working-directory: ${{ github.workspace }}
+        run: |
+          [[ -n "${PROJECT_COMMAND//[[:space:]]/}" ]] || {
+            echo 'The command input must not be empty' >&2
+            exit 1
+          }
+          bash -o errexit -o nounset -o pipefail -c "$PROJECT_COMMAND"

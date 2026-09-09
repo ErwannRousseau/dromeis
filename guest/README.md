@@ -55,14 +55,27 @@ ssh-copy-id -i SSH_KEY_FILE runner@$(tart ip runner)
 
 Xcode cannot be installed automatically from the script as it requires a 2FA
 with an Apple ID. It can be installed with
-[xcodes](https://github.com/RobotsAndPencils/xcodes) from within the VM.
+[xcodes](https://github.com/RobotsAndPencils/xcodes) from within the VM. Install
+both supported versions manually and keep the exact application names used by
+the workflow:
 
 ```sh
-xcodes install --latest --experimental-unxip
-sudo xcode-select -s "/Applications/$(ls /Applications | grep -m 1 Xcode)"
+xcodes install 26 --experimental-unxip
+sudo mv /Applications/Xcode-26*.app /Applications/Xcode_26.app
+xcodes install 27 --experimental-unxip
+sudo mv /Applications/Xcode-27*.app /Applications/Xcode_27.app
+sudo xcode-select -s /Applications/Xcode_27.app
 sudo xcodebuild -license accept
 sudo xcodebuild -runFirstLaunch
 sudo xcodebuild -downloadAllPlatforms
+```
+
+Verify the image inventory before publishing it:
+
+```sh
+for version in 26 27; do
+  test -d "/Applications/Xcode_${version}.app/Contents/Developer"
+done
 ```
 
 ## Push the image on the container registry
@@ -72,5 +85,15 @@ the [registry configuration guide](registry/README.md) to get one running.
 
 ```
 tart login REGISTRY_URL
-tart push runner REGISTRY_URL/runner:latest
+tart push runner REGISTRY_URL/runner:IMAGE_TAG
 ```
+
+After publishing, resolve the manifest digest and set
+`REGISTRY_IMAGE_DIGEST=sha256:<64_HEX_DIGEST>` on the host. The host consumes
+that digest rather than a mutable tag such as `latest`.
+
+The image provisions Node.js 20.19.4, 22.20.0, and 24.20.0 (default 24.20.0),
+Java 11, 17, and 21 (default 17), and Ruby 3.3.6, 3.4.6, and 4.0.6 (default
+4.0.6) at build time. The inventory and defaults are written to
+`/etc/dromeis/toolchains.env`; jobs must use those installed runtimes and must
+not download toolchains.
