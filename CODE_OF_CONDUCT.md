@@ -1,7 +1,5 @@
 # Code of Conduct
 
-Contact: <info@mirego.com>
-
 ## Why have a Code of Conduct?
 
 As contributors and maintainers of this project, we are committed to providing a
@@ -17,7 +15,7 @@ conflicts in the community when they arise.
 
 ## Our Values
 
-These are the values Ekiden developers should aspire to:
+These are the values Dromeis developers should aspire to:
 
 - Be friendly and welcoming
 - Be patient

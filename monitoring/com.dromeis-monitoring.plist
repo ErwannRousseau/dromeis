@@ -3,23 +3,23 @@
 <plist version="1.0">
   <dict>
     <key>Label</key>
-    <string>com.mirego.ekiden</string>
+    <string>com.dromeis-monitoring</string>
     <key>LaunchOnlyOnce</key>
     <true/>
     <key>ProgramArguments</key>
     <array>
       <string>sh</string>
       <string>-c</string>
-      <string>/Users/admin/vm/launch.sh</string>
+      <string>/Users/admin/grafana/launch.sh</string>
     </array>
     <key>UserName</key>
     <string>admin</string>
     <key>WorkingDirectory</key>
-    <string>/Users/admin/vm</string>
+    <string>/Users/admin/grafana</string>
     <key>StandardErrorPath</key>
-    <string>/Users/admin/vm/stderr</string>
+    <string>/Users/admin/grafana/stderr</string>
     <key>StandardOutPath</key>
-    <string>/Users/admin/vm/stdout</string>
+    <string>/Users/admin/grafana/stdout</string>
     <key>RunAtLoad</key>
     <true/>
   </dict>

@@ -2,7 +2,7 @@
 # Allow to add a tag to an OCI image without having to pull it first
 
 REGISTRY_NAME="https://10.1.3.132"
-REPOSITORY=mirego/runner
+REPOSITORY=dromeis/runner
 USERNAME=username
 PASSWORD=password
 

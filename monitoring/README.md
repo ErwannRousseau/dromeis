@@ -35,8 +35,8 @@ On the remote machine, install the service and launch it.
 
 ```
 sudo chown root:wheel launch.sh
-sudo cp com.mirego.ekiden-monitoring.plist /Library/LaunchDaemons
-sudo launchctl load -w /Library/LaunchDaemons/com.mirego.ekiden-monitoring.plist
+sudo cp com.dromeis-monitoring.plist /Library/LaunchDaemons
+sudo launchctl load -w /Library/LaunchDaemons/com.dromeis-monitoring.plist
 ```
 
 ## Post-Launch Configuration
