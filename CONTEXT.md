@@ -42,7 +42,10 @@ and Ruby. _Avoid_: image configuration
 
 **Image default**: The default Xcode, Node.js, Java, or Ruby version configured
 in the runner image when the project supplies no version and the workflow
-supplies no input. _Avoid_: host default, latest version
+supplies no input. Node.js defaults to 24.20.0, the latest LTS at this decision;
+Java defaults to 17 for React Native compatibility; Ruby defaults to 4.0.6, the
+latest stable release because Ruby has no LTS channel. The selected versions are
+pinned when the image is built. _Avoid_: host default, live version lookup
 
 **Version resolution**: The selection policy
 `project version file > workflow input > image default`, applied independently
