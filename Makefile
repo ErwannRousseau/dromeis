@@ -1,7 +1,7 @@
 # Linter and formatter configuration
 # ----------------------------------
 
-PRETTIER_FILES_PATTERN = './*.md' './*/*.md'
+PRETTIER_FILES_PATTERN = '**/*.md'
 SHFMT_FILES_PATTERN = ./**/*.sh
 
 # Introspection targets
