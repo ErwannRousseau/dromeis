@@ -82,18 +82,25 @@ done
 
 The new image can be pushed to a registry to facilitate the distribution. Follow
 the [registry configuration guide](registry/README.md) to get one running.
+Replace `IMAGE_TAG` with a unique build identifier (for example, a release or
+commit label). The tag is only a mutable name for publishing; it is not the
+image reference used by the host.
 
 ```
 tart login REGISTRY_URL
 tart push runner REGISTRY_URL/runner:IMAGE_TAG
 ```
 
-After publishing, resolve the manifest digest and set
-`REGISTRY_IMAGE_DIGEST=sha256:<64_HEX_DIGEST>` on the host. The host consumes
-that digest rather than a mutable tag such as `latest`.
+After publishing, read the pushed manifest's digest from the registry and set
+`REGISTRY_IMAGE_DIGEST=sha256:<64_HEX_DIGEST>` in the host `.env`. For example,
+the host turns `REGISTRY_URL/runner` plus that digest into
+`REGISTRY_URL/runner@sha256:<64_HEX_DIGEST>` and pulls that immutable image. Do
+not copy `IMAGE_TAG` into `REGISTRY_IMAGE_DIGEST` or use `latest`.
 
-The image provisions Node.js 20.19.4, 22.20.0, and 24.20.0 (default 24.20.0),
-Java 11, 17, and 21 (default 17), and Ruby 3.3.6, 3.4.6, and 4.0.6 (default
-4.0.6) at build time. The inventory and defaults are written to
+The non-default Node.js and Java entries are compatibility slots for projects
+that cannot use the defaults; they are not requirements imposed on callers. The
+image provisions Node.js 20.19.4, 22.20.0, and 24.20.0 (default 24.20.0), Java
+11, 17, and 21 (default 17), and Ruby 3.3.6, 3.4.6, and 4.0.6 (default 4.0.6) at
+build time. The inventory and defaults are written to
 `/etc/dromeis/toolchains.env`; jobs must use those installed runtimes and must
 not download toolchains.
