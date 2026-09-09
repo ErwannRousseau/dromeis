@@ -97,10 +97,7 @@ the host turns `REGISTRY_URL/runner` plus that digest into
 `REGISTRY_URL/runner@sha256:<64_HEX_DIGEST>` and pulls that immutable image. Do
 not copy `IMAGE_TAG` into `REGISTRY_IMAGE_DIGEST` or use `latest`.
 
-The non-default Node.js and Java entries are compatibility slots for projects
-that cannot use the defaults; they are not requirements imposed on callers. The
-image provisions Node.js 20.19.4, 22.20.0, and 24.20.0 (default 24.20.0), Java
-11, 17, and 21 (default 17), and Ruby 3.3.6, 3.4.6, and 4.0.6 (default 4.0.6) at
-build time. The inventory and defaults are written to
-`/etc/dromeis/toolchains.env`; jobs must use those installed runtimes and must
-not download toolchains.
+The image provisions Node.js 22.20.0 and 24.20.0 (default 24.20.0), Java 17 and
+21 (default 17), and Ruby 3.3.6, 3.4.6, and 4.0.6 (default 4.0.6) at build time.
+The inventory and defaults are written to `/etc/dromeis/toolchains.env`; jobs
+must use those installed runtimes and must not download toolchains.

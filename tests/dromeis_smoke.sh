@@ -42,9 +42,9 @@ assert_not_contains "$workflow" 'asdf.sh'
 
 assert_contains "$docs" 'Xcode_<version>.app'
 
-assert_contains "$image" 'DROMEIS_NODE_VERSIONS=20.19.4,22.20.0,24.20.0'
+assert_contains "$image" 'DROMEIS_NODE_VERSIONS=22.20.0,24.20.0'
 assert_contains "$image" 'brew install wget cmake gcc git-lfs jq unzip zip ca-certificates awscli gpg gawk'
-assert_contains "$image" 'DROMEIS_JAVA_VERSIONS=11,17,21'
+assert_contains "$image" 'DROMEIS_JAVA_VERSIONS=17,21'
 assert_contains "$image" 'DROMEIS_RUBY_VERSIONS=3.3.6,3.4.6,4.0.6'
 assert_contains "$image" 'DROMEIS_XCODE_VERSIONS=26,27'
 assert_not_contains "$image" 'asdf.sh'
