@@ -5,6 +5,10 @@ validation or TestFlight command. The caller supplies the command and, when
 needed, these optional inputs: `xcode-version`, `node-version`, `java-version`,
 and `ruby-version`.
 
+The caller YAML below belongs in the consuming React Native repository, not in
+this Dromeis repository. It pins Dromeis and forwards that repository's
+publication secrets; Dromeis only owns the reusable workflow interface.
+
 Publication credentials are passed explicitly from the consuming repository or
 organization:
 
@@ -41,10 +45,12 @@ Node.js and Ruby are selected from their installed asdf paths. Java is selected
 from an installed JDK, and Xcode uses `/Applications/Xcode_<version>.app`. Jobs
 never download or install a missing version.
 
-The caller owns event policy. Use `pull_request` types `opened`, `synchronize`,
-and `reopened` for validation. Add a separate publication job for `pull_request`
-`labeled`, guarded by `github.event.label.name == 'testflight'`. Do not publish
-on `synchronize`, even when the pull request already has the label.
+The consuming repository's caller workflow owns event policy. Configure
+`pull_request` types `opened`, `synchronize`, and `reopened` there for
+validation, plus a separate publication job for `pull_request` `labeled` guarded
+by `github.event.label.name == 'testflight'`. Do not add those triggers to this
+reusable workflow, and do not publish on `synchronize`, even when the pull
+request already has the label.
 
 Pin the `uses` reference to a reviewed Dromeis commit SHA. The workflow checks
 out `github.event.pull_request.head.sha`, resolves only versions already listed
