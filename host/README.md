@@ -46,7 +46,7 @@ contains configurations for the runner (see `.env.example` for a template).
 
 ```
 scp launch.sh admin@<HOST_IP>:vm
-scp com.mirego.dromeis.plist admin@<HOST_IP>:vm
+scp com.dromeis.plist admin@<HOST_IP>:vm
 scp .env admin@<HOST_IP>:vm
 ```
 
@@ -66,8 +66,8 @@ Install the service and launch it.
 
 ```
 sudo chown root:wheel launch.sh
-sudo cp com.mirego.dromeis.plist /Library/LaunchDaemons
-sudo launchctl load -w /Library/LaunchDaemons/com.mirego.dromeis.plist
+sudo cp com.dromeis.plist /Library/LaunchDaemons
+sudo launchctl load -w /Library/LaunchDaemons/com.dromeis.plist
 ```
 
 You can now logout from the server.

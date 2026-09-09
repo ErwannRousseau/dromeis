@@ -1,7 +1,5 @@
 # Code of Conduct
 
-Contact: <info@mirego.com>
-
 ## Why have a Code of Conduct?
 
 As contributors and maintainers of this project, we are committed to providing a

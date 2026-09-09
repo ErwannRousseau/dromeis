@@ -3,7 +3,7 @@
 <plist version="1.0">
   <dict>
     <key>Label</key>
-    <string>com.mirego.dromeis-monitoring</string>
+    <string>com.dromeis-monitoring</string>
     <key>LaunchOnlyOnce</key>
     <true/>
     <key>ProgramArguments</key>
