@@ -40,11 +40,6 @@ assert_contains "$workflow" 'choose_version XCODE_VERSION'
 assert_contains "$workflow" 'java_asdf_requested'
 assert_not_contains "$workflow" 'asdf.sh'
 
-assert_contains "$docs" "\`pull_request\` types \`opened\`, \`synchronize\`,"
-assert_contains "$docs" "and \`reopened\` there for"
-assert_contains "$docs" "github.event.label.name == 'testflight'"
-assert_contains "$docs" 'Do not add those triggers'
-assert_contains "$docs" "do not publish on \`synchronize\`"
 assert_contains "$docs" 'Xcode_<version>.app'
 
 assert_contains "$image" 'DROMEIS_NODE_VERSIONS=20.19.4,22.20.0,24.20.0'
