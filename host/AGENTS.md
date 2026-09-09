@@ -23,6 +23,8 @@ for each GitHub Actions runner job.
 - Keep exactly one active GitHub endpoint and runner URL per deployment; the
   example lists organization and repository alternatives, and the loader applies
   the later duplicate value.
-- Verify `VM_USERNAME` and `VM_PASSWORD` against the built guest image before
-  launching; the current guest templates use `runner` while this host script
-  defaults to `admin`.
+- The host script connects to the guest's `runner` SSH account. The physical
+  host's launchd user remains `admin`. Register every runner with
+  `self-hosted,arm64,dromeis`; keep that label contract unchanged.
+- Remote images require `REGISTRY_IMAGE_DIGEST=sha256:...`; never use `latest`.
+  Local Tart image names remain supported when `REGISTRY_URL` is empty.

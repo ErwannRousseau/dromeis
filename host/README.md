@@ -1,10 +1,14 @@
 # Host Configuration
 
+For a completely reset Mac, follow the
+[first-installation guide](../docs/getting-started.md) first.
+
 ## UI
 
 ### Complete the macOS setup
 
-Use `admin` as the username for the initial user
+Use `admin` as the username for the initial user. The guest image and
+`host/launch.sh` use the separate `runner` account for VM SSH.
 
 ### Adjust the machine’s preferences
 
@@ -71,3 +75,12 @@ sudo launchctl load -w /Library/LaunchDaemons/com.dromeis.plist
 ```
 
 You can now logout from the server.
+
+### Image configuration
+
+Set `REGISTRY_URL` to the registry host accepted by Tart (for example,
+`registry.example.com`, without `https://`), then set `REGISTRY_IMAGE_NAME` and
+an immutable `REGISTRY_IMAGE_DIGEST` (`sha256:` followed by 64 hexadecimal
+characters) in `.env` for a remote image. `latest` is intentionally unsupported.
+With no `REGISTRY_URL`, the local Tart image named by `REGISTRY_IMAGE_NAME` is
+used.

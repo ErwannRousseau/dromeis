@@ -32,7 +32,7 @@ build {
       "source ~/.zprofile",
       "brew --version",
       "brew update",
-      "brew install wget cmake gcc git-lfs jq unzip zip ca-certificates awscli",
+      "brew install wget cmake gcc git-lfs jq unzip zip ca-certificates awscli gpg gawk",
       "git lfs install",
     ]
   }
@@ -56,12 +56,29 @@ build {
     inline = [
       "source ~/.zprofile",
       "brew install asdf",
-      "echo \". $(brew --prefix asdf)/libexec/asdf.sh\" >> ~/.zprofile",
+      "echo 'export ASDF_DATA_DIR=$HOME/.asdf' >> ~/.zprofile",
+      "echo 'export PATH=$ASDF_DATA_DIR/shims:$PATH' >> ~/.zprofile",
       "source ~/.zprofile",
       "asdf plugin add nodejs",
       "asdf plugin add java",
       "asdf plugin add ruby",
       "asdf plugin add python",
+      "for version in 22.20.0 24.20.0; do asdf install nodejs $${version}; done",
+      "asdf set -u nodejs 24.20.0",
+      "for version in temurin-17.0.15+6 temurin-21.0.7+6; do asdf install java $${version}; done",
+      "asdf set -u java temurin-17.0.15+6",
+      "for version in 3.3.6 3.4.6 4.0.6; do asdf install ruby $${version}; done",
+      "asdf set -u ruby 4.0.6",
+      "sudo mkdir -p /etc/dromeis",
+      "sudo sh -c 'echo \"DROMEIS_NODE_VERSIONS=22.20.0,24.20.0\" > /etc/dromeis/toolchains.env'",
+      "sudo sh -c 'echo \"DROMEIS_NODE_DEFAULT=24.20.0\" >> /etc/dromeis/toolchains.env'",
+      "sudo sh -c 'echo \"DROMEIS_JAVA_VERSIONS=17,21\" >> /etc/dromeis/toolchains.env'",
+      "sudo sh -c 'echo \"DROMEIS_JAVA_ASDF_VERSIONS=temurin-17.0.15+6,temurin-21.0.7+6\" >> /etc/dromeis/toolchains.env'",
+      "sudo sh -c 'echo \"DROMEIS_JAVA_DEFAULT=17\" >> /etc/dromeis/toolchains.env'",
+      "sudo sh -c 'echo \"DROMEIS_RUBY_VERSIONS=3.3.6,3.4.6,4.0.6\" >> /etc/dromeis/toolchains.env'",
+      "sudo sh -c 'echo \"DROMEIS_RUBY_DEFAULT=4.0.6\" >> /etc/dromeis/toolchains.env'",
+      "sudo sh -c 'echo \"DROMEIS_XCODE_VERSIONS=26,27\" >> /etc/dromeis/toolchains.env'",
+      "sudo sh -c 'echo \"DROMEIS_XCODE_DEFAULT=27\" >> /etc/dromeis/toolchains.env'",
     ]
   }
 
@@ -76,7 +93,6 @@ build {
   provisioner "shell" {
     inline = [
       "source ~/.zprofile",
-      "brew install --cask temurin",
       "brew install android-commandlinetools android-ndk",
       "echo \"export ANDROID_HOME=/opt/homebrew/share/android-sdk\" >> ~/.zprofile",
       "echo \"export ANDROID_SDK_ROOT=/opt/homebrew/share/android-sdk\" >> ~/.zprofile",

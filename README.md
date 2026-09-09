@@ -1,7 +1,4 @@
-<div align="center">
-  <img alt="Dromeis" src="https://user-images.githubusercontent.com/11348/221278252-9183ed78-ae49-4d7b-be99-f8545de1921f.png" width="400" />
-  <p><br />GitHub Actions self-hosted <code>arm64</code> macOS runners</p>
-</div>
+# Dromeis
 
 ## Introduction
 
@@ -18,6 +15,8 @@ these images, [Gitea](https://gitea.io/) to store the images and
 
 ## Configuration
 
+- For a new machine, start with the
+  [first-installation guide](docs/getting-started.md).
 - To configure a new **host** machine, follow the
   [host configuration guide](host/README.md)
 - To create a new **VM**, follow the

@@ -21,3 +21,4 @@ jobs:
       - uses: actions/setup-node@v3
       - run: sudo apt install shfmt shellcheck
       - run: make lint
+      - run: make smoke
